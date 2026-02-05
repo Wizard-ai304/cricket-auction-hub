@@ -172,25 +172,49 @@ const AuctionBoard = () => {
 
                 {/* Action Buttons */}
                 {!isPlayerSold ? (
-                  <div className="grid grid-cols-2 gap-4">
-                    <Button
-                      size="lg"
-                      onClick={handleBid}
-                      disabled={!currentTeam || currentTeam.remainingBudget < currentBid}
-                      className="btn-auction bg-primary hover:bg-primary/90"
-                    >
-                      <Check className="w-5 h-5 mr-2" />
-                      Bid ₹{(currentBidder ? currentBid + auctionState.bidIncrement : currentBid).toLocaleString()}
-                    </Button>
-                    <Button
-                      size="lg"
-                      variant="destructive"
-                      onClick={dropFromBidding}
-                      className="btn-auction"
-                    >
-                      <ThumbsDown className="w-5 h-5 mr-2" />
-                      Drop
-                    </Button>
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-2 gap-4">
+                      <Button
+                        size="lg"
+                        onClick={handleBid}
+                        disabled={!currentTeam || currentTeam.remainingBudget < currentBid}
+                        className="btn-auction bg-primary hover:bg-primary/90"
+                      >
+                        <Check className="w-5 h-5 mr-2" />
+                        Bid ₹{(currentBidder ? currentBid + auctionState.bidIncrement : currentBid).toLocaleString()}
+                      </Button>
+                      <Button
+                        size="lg"
+                        variant="destructive"
+                        onClick={dropFromBidding}
+                        className="btn-auction"
+                      >
+                        <ThumbsDown className="w-5 h-5 mr-2" />
+                        Drop
+                      </Button>
+                    </div>
+                    
+                    {/* Sell & Unsold Buttons */}
+                    <div className="grid grid-cols-2 gap-4 pt-2 border-t border-border">
+                      <Button
+                        size="lg"
+                        onClick={sellPlayer}
+                        disabled={!currentBidder}
+                        className="btn-auction bg-accent text-accent-foreground hover:bg-accent/90"
+                      >
+                        <Gavel className="w-5 h-5 mr-2" />
+                        Sell
+                      </Button>
+                      <Button
+                        size="lg"
+                        variant="outline"
+                        onClick={markUnsold}
+                        className="btn-auction border-destructive text-destructive hover:bg-destructive/10"
+                      >
+                        <X className="w-5 h-5 mr-2" />
+                        Unsold
+                      </Button>
+                    </div>
                   </div>
                 ) : (
                   <div className="text-center py-4">
@@ -204,24 +228,6 @@ const AuctionBoard = () => {
                   </div>
                 )}
 
-                {/* Manual Actions */}
-                {!isPlayerSold && activeTeamIds.length === 1 && currentBidder && (
-                  <div className="text-center pt-4 border-t border-border">
-                    <Button size="lg" onClick={sellPlayer} className="btn-auction bg-accent text-accent-foreground">
-                      <Gavel className="w-5 h-5 mr-2" />
-                      Sell to {currentBidder.name}
-                    </Button>
-                  </div>
-                )}
-
-                {!isPlayerSold && activeTeamIds.length === 0 && !currentBidder && (
-                  <div className="text-center pt-4 border-t border-border">
-                    <Button size="lg" variant="destructive" onClick={markUnsold} className="btn-auction">
-                      <X className="w-5 h-5 mr-2" />
-                      Mark Unsold
-                    </Button>
-                  </div>
-                )}
               </div>
             )}
           </CardContent>
