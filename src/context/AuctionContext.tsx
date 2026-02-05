@@ -12,6 +12,7 @@ interface AuctionContextType {
   setBasePrice: (price: number) => void;
   bidIncrement: number;
   setBidIncrement: (increment: number) => void;
+  updateBidIncrement: (increment: number) => void;
   maxTeamSize: number;
   setMaxTeamSize: (size: number) => void;
   auctionState: AuctionState;
@@ -257,6 +258,14 @@ export const AuctionProvider: React.FC<{ children: React.ReactNode }> = ({ child
     nextPlayer();
   }, [players, nextPlayer]);
 
+  const updateBidIncrement = useCallback((increment: number) => {
+    setBidIncrement(increment);
+    setAuctionState(prev => ({
+      ...prev,
+      bidIncrement: increment,
+    }));
+  }, []);
+
   return (
     <AuctionContext.Provider value={{
       step,
@@ -269,6 +278,7 @@ export const AuctionProvider: React.FC<{ children: React.ReactNode }> = ({ child
       setBasePrice,
       bidIncrement,
       setBidIncrement,
+      updateBidIncrement,
       maxTeamSize,
       setMaxTeamSize,
       auctionState,

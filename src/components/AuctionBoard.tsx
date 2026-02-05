@@ -1,11 +1,12 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useAuction } from '@/context/AuctionContext';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
 import { 
   Gavel, Play, SkipForward, ThumbsDown, Check, X, 
-  Users, Wallet, AlertTriangle, Trophy, RotateCcw 
+  Users, Wallet, AlertTriangle, Trophy, RotateCcw, TrendingUp
 } from 'lucide-react';
 
 const AuctionBoard = () => {
@@ -13,6 +14,9 @@ const AuctionBoard = () => {
     teams,
     players,
     auctionState,
+    basePrice,
+    bidIncrement,
+    updateBidIncrement,
     startAuction,
     nextPlayer,
     placeBid,
@@ -43,10 +47,24 @@ const AuctionBoard = () => {
   const soldPlayers = players.filter(p => p.status === 'sold');
   const unsoldPlayers = players.filter(p => p.status === 'unsold');
 
+  // Calculate max bid for a team: remaining balance - ((player slots - 1) × base price)
+  const calculateMaxBid = (team: typeof teams[0]) => {
+    const slotsRemaining = team.maxSize - team.players.length;
+    const reserveForOtherPlayers = (slotsRemaining - 1) * basePrice;
+    return Math.max(0, team.remainingBudget - reserveForOtherPlayers);
+  };
+
   const handleBid = () => {
     setAnimateBid(true);
     placeBid();
     setTimeout(() => setAnimateBid(false), 300);
+  };
+
+  const handleBidIncrementChange = (value: string) => {
+    const num = parseInt(value) || 0;
+    if (num >= 0) {
+      updateBidIncrement(num);
+    }
   };
 
   const getRoleColor = (role: string) => {
@@ -170,6 +188,19 @@ const AuctionBoard = () => {
                   )}
                 </div>
 
+                {/* Bid Increment Control */}
+                <div className="flex items-center justify-center gap-3 p-3 bg-secondary/20 rounded-lg">
+                  <TrendingUp className="w-4 h-4 text-muted-foreground" />
+                  <span className="text-sm text-muted-foreground">Bid Increment:</span>
+                  <Input
+                    type="number"
+                    value={bidIncrement}
+                    onChange={(e) => handleBidIncrementChange(e.target.value)}
+                    className="w-28 h-8 text-center font-display"
+                    min={1}
+                  />
+                </div>
+
                 {/* Action Buttons */}
                 {!isPlayerSold ? (
                   <div className="space-y-4">
@@ -290,6 +321,9 @@ const AuctionBoard = () => {
                           {!canAfford && !isDropped && (
                             <AlertTriangle className="w-3 h-3 text-destructive" />
                           )}
+                        </div>
+                        <div className="text-xs text-accent mt-1">
+                          Max Bid: ₹{calculateMaxBid(team).toLocaleString()}
                         </div>
                       </div>
                       <div className="text-xs text-muted-foreground">
