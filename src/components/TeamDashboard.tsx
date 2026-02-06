@@ -2,6 +2,7 @@ import { useAuction } from '@/context/AuctionContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Crown, Wallet, Users, TrendingUp } from 'lucide-react';
+import { getImageByCode } from '@/lib/imageUtils';
 
 const TeamDashboard = () => {
   const { teams, players } = useAuction();
@@ -78,12 +79,20 @@ const TeamDashboard = () => {
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <div 
-                      className="w-12 h-12 rounded-full flex items-center justify-center text-xl font-display font-bold"
-                      style={{ backgroundColor: team.color + '30', color: team.color }}
-                    >
-                      {team.name.charAt(0)}
-                    </div>
+                    {getImageByCode(team.logoCode) ? (
+                      <img 
+                        src={getImageByCode(team.logoCode)!} 
+                        alt={team.name} 
+                        className="w-12 h-12 rounded-full object-cover border-2 border-border"
+                      />
+                    ) : (
+                      <div 
+                        className="w-12 h-12 rounded-full flex items-center justify-center text-xl font-display font-bold"
+                        style={{ backgroundColor: team.color + '30', color: team.color }}
+                      >
+                        {team.name.charAt(0)}
+                      </div>
+                    )}
                     <div>
                       <CardTitle className="font-display text-lg">{team.name}</CardTitle>
                       <div className="flex items-center gap-1 text-sm text-muted-foreground">
@@ -143,9 +152,17 @@ const TeamDashboard = () => {
                         style={{ animationDelay: `${idx * 50}ms` }}
                       >
                         <div className="flex items-center gap-2">
-                          <span className="w-5 h-5 rounded-full bg-secondary flex items-center justify-center text-xs font-medium">
-                            {idx + 1}
-                          </span>
+                          {getImageByCode(player.imageCode) ? (
+                            <img 
+                              src={getImageByCode(player.imageCode)!} 
+                              alt={player.name} 
+                              className="w-6 h-6 rounded-full object-cover border border-border"
+                            />
+                          ) : (
+                            <span className="w-5 h-5 rounded-full bg-secondary flex items-center justify-center text-xs font-medium">
+                              {idx + 1}
+                            </span>
+                          )}
                           <span className="font-medium">{player.name}</span>
                         </div>
                         <div className="flex items-center gap-2">
@@ -190,9 +207,17 @@ const TeamDashboard = () => {
                 className="player-card unsold p-4"
               >
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-destructive/20 flex items-center justify-center text-destructive font-display font-bold">
-                    {player.name.charAt(0)}
-                  </div>
+                  {getImageByCode(player.imageCode) ? (
+                    <img 
+                      src={getImageByCode(player.imageCode)!} 
+                      alt={player.name} 
+                      className="w-10 h-10 rounded-full object-cover border border-destructive/50"
+                    />
+                  ) : (
+                    <div className="w-10 h-10 rounded-full bg-destructive/20 flex items-center justify-center text-destructive font-display font-bold">
+                      {player.name.charAt(0)}
+                    </div>
+                  )}
                   <div>
                     <div className="font-medium">{player.name}</div>
                     <Badge 

@@ -4,12 +4,13 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Plus, Trash2, Users, Crown, Wallet, ArrowRight } from 'lucide-react';
+import { Plus, Trash2, Users, Crown, Wallet, ArrowRight, Image } from 'lucide-react';
 import { Team } from '@/types/auction';
+import { getImageByCode } from '@/lib/imageUtils';
 
 const TeamSetup = () => {
   const { teams, setTeams, maxTeamSize, setMaxTeamSize, setStep } = useAuction();
-  const [newTeam, setNewTeam] = useState({ name: '', captain: '', budget: 10000 });
+  const [newTeam, setNewTeam] = useState({ name: '', captain: '', budget: 10000, logoCode: '' });
 
   const addTeam = () => {
     if (!newTeam.name.trim() || !newTeam.captain.trim()) return;
@@ -23,10 +24,11 @@ const TeamSetup = () => {
       maxSize: maxTeamSize,
       players: [],
       color: TEAM_COLORS[teams.length % TEAM_COLORS.length],
+      logoCode: newTeam.logoCode.trim() || undefined,
     };
     
     setTeams(prev => [...prev, team]);
-    setNewTeam({ name: '', captain: '', budget: 10000 });
+    setNewTeam({ name: '', captain: '', budget: 10000, logoCode: '' });
   };
 
   const removeTeam = (id: string) => {
@@ -83,8 +85,34 @@ const TeamSetup = () => {
                 onChange={(e) => setNewTeam(prev => ({ ...prev, budget: Number(e.target.value) }))}
                 min={1000}
                 step={500}
+              className="bg-secondary border-border"
+              />
+            </div>
+            <div>
+              <Label htmlFor="logoCode" className="flex items-center gap-1">
+                <Image className="w-3 h-3" />
+                Team Logo Code
+              </Label>
+              <Input
+                id="logoCode"
+                value={newTeam.logoCode}
+                onChange={(e) => setNewTeam(prev => ({ ...prev, logoCode: e.target.value }))}
+                placeholder="e.g. mi, csk, rcb"
                 className="bg-secondary border-border"
               />
+              {newTeam.logoCode && getImageByCode(newTeam.logoCode) && (
+                <div className="mt-2 flex items-center gap-2">
+                  <img 
+                    src={getImageByCode(newTeam.logoCode)!} 
+                    alt="Team logo preview" 
+                    className="w-10 h-10 rounded-full object-cover border border-border"
+                  />
+                  <span className="text-xs text-muted-foreground">Preview</span>
+                </div>
+              )}
+              {newTeam.logoCode && !getImageByCode(newTeam.logoCode) && (
+                <p className="text-xs text-destructive mt-1">No image found for "{newTeam.logoCode}"</p>
+              )}
             </div>
             <div>
               <Label htmlFor="maxSize">Max Team Size</Label>
@@ -131,6 +159,20 @@ const TeamSetup = () => {
                     className="p-4 rounded-lg bg-secondary/50 border border-border flex items-center justify-between group hover:border-primary/50 transition-colors"
                     style={{ borderLeftColor: team.color, borderLeftWidth: '4px' }}
                   >
+                    {getImageByCode(team.logoCode) ? (
+                      <img 
+                        src={getImageByCode(team.logoCode)!} 
+                        alt={team.name} 
+                        className="w-10 h-10 rounded-full object-cover border border-border flex-shrink-0"
+                      />
+                    ) : (
+                      <div 
+                        className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-display font-bold flex-shrink-0"
+                        style={{ backgroundColor: team.color + '30', color: team.color }}
+                      >
+                        {team.name.charAt(0)}
+                      </div>
+                    )}
                     <div className="flex-1">
                       <div className="flex items-center gap-2">
                         <span className="font-display font-semibold">{team.name}</span>
