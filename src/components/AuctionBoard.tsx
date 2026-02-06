@@ -164,10 +164,10 @@ const AuctionBoard = () => {
                     <img 
                       src={getImageByCode(currentPlayer.imageCode)!} 
                       alt={currentPlayer.name} 
-                      className="w-24 h-24 mx-auto mb-4 rounded-full object-cover border-2 border-primary shadow-[0_0_20px_hsl(var(--primary)/0.3)]"
+                      className="w-40 h-40 mx-auto mb-4 rounded-full object-cover border-4 border-primary shadow-[0_0_30px_hsl(var(--primary)/0.4)]"
                     />
                   ) : (
-                    <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-secondary flex items-center justify-center text-3xl font-display font-bold text-primary">
+                    <div className="w-36 h-36 mx-auto mb-4 rounded-full bg-secondary flex items-center justify-center text-5xl font-display font-bold text-primary">
                       {currentPlayer.name.charAt(0)}
                     </div>
                   )}
