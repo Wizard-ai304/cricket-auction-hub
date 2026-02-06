@@ -7,6 +7,7 @@ export interface Player {
   soldTo?: string;
   status: 'available' | 'sold' | 'unsold';
   isUnsoldRound?: boolean;
+  imageCode?: string;
 }
 
 export interface Team {
@@ -18,6 +19,7 @@ export interface Team {
   maxSize: number;
   players: Player[];
   color: string;
+  logoCode?: string;
 }
 
 export interface AuctionState {

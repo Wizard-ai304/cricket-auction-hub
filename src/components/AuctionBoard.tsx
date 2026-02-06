@@ -8,6 +8,7 @@ import {
   Gavel, Play, SkipForward, ThumbsDown, Check, X, 
   Users, Wallet, AlertTriangle, Trophy, RotateCcw, TrendingUp
 } from 'lucide-react';
+import { getImageByCode } from '@/lib/imageUtils';
 
 const AuctionBoard = () => {
   const {
@@ -159,9 +160,17 @@ const AuctionBoard = () => {
               <div className="space-y-6">
                 {/* Player Info */}
                 <div className={`player-card p-6 text-center ${isPlayerSold ? 'sold' : ''}`}>
-                  <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-secondary flex items-center justify-center text-3xl font-display font-bold text-primary">
-                    {currentPlayer.name.charAt(0)}
-                  </div>
+                  {getImageByCode(currentPlayer.imageCode) ? (
+                    <img 
+                      src={getImageByCode(currentPlayer.imageCode)!} 
+                      alt={currentPlayer.name} 
+                      className="w-24 h-24 mx-auto mb-4 rounded-full object-cover border-2 border-primary shadow-[0_0_20px_hsl(var(--primary)/0.3)]"
+                    />
+                  ) : (
+                    <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-secondary flex items-center justify-center text-3xl font-display font-bold text-primary">
+                      {currentPlayer.name.charAt(0)}
+                    </div>
+                  )}
                   <h3 className="font-display text-2xl font-bold mb-2">{currentPlayer.name}</h3>
                   <Badge className={`${getRoleColor(currentPlayer.role)} border`}>
                     {currentPlayer.role}
@@ -300,12 +309,20 @@ const AuctionBoard = () => {
                           isActive ? 'active' : isDropped ? 'dropped' : 'waiting'
                         }`}
                       />
-                      <div 
-                        className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold"
-                        style={{ backgroundColor: team.color + '30', color: team.color }}
-                      >
-                        {team.name.charAt(0)}
-                      </div>
+                      {getImageByCode(team.logoCode) ? (
+                        <img 
+                          src={getImageByCode(team.logoCode)!} 
+                          alt={team.name} 
+                          className="w-8 h-8 rounded-full object-cover border border-border"
+                        />
+                      ) : (
+                        <div 
+                          className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold"
+                          style={{ backgroundColor: team.color + '30', color: team.color }}
+                        >
+                          {team.name.charAt(0)}
+                        </div>
+                      )}
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2">
                           <span className="font-medium truncate">{team.name}</span>

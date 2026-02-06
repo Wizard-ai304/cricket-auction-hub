@@ -5,15 +5,16 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Plus, Trash2, UserPlus, Gavel, ArrowRight, IndianRupee } from 'lucide-react';
+import { Plus, Trash2, UserPlus, Gavel, ArrowRight, IndianRupee, Image } from 'lucide-react';
 import { Player } from '@/types/auction';
+import { getImageByCode } from '@/lib/imageUtils';
 
 const ROLES = ['Batsman', 'Bowler', 'All-Rounder', 'Wicket-Keeper'] as const;
 const BASE_PRICES = [150, 200, 300, 400, 500, 750, 1000, 1500, 2000, 2500, 3000, 4000, 5000];
 
 const PlayerManagement = () => {
   const { players, setPlayers, basePrice, setBasePrice, bidIncrement, setBidIncrement, setStep } = useAuction();
-  const [newPlayer, setNewPlayer] = useState({ name: '', role: 'Batsman' as Player['role'] });
+  const [newPlayer, setNewPlayer] = useState({ name: '', role: 'Batsman' as Player['role'], imageCode: '' });
   const [basePriceSet, setBasePriceSet] = useState(players.length > 0);
 
   const addPlayer = () => {
@@ -25,10 +26,11 @@ const PlayerManagement = () => {
       role: newPlayer.role,
       basePrice: basePrice,
       status: 'available',
+      imageCode: newPlayer.imageCode.trim() || undefined,
     };
     
     setPlayers(prev => [...prev, player]);
-    setNewPlayer({ name: '', role: 'Batsman' });
+    setNewPlayer({ name: '', role: 'Batsman', imageCode: '' });
     setBasePriceSet(true);
   };
 
@@ -157,6 +159,32 @@ const PlayerManagement = () => {
                 </SelectContent>
               </Select>
             </div>
+            <div>
+              <Label htmlFor="playerImageCode" className="flex items-center gap-1">
+                <Image className="w-3 h-3" />
+                Player Logo Code
+              </Label>
+              <Input
+                id="playerImageCode"
+                value={newPlayer.imageCode}
+                onChange={(e) => setNewPlayer(prev => ({ ...prev, imageCode: e.target.value }))}
+                placeholder="e.g. virat, rohit"
+                className="bg-secondary border-border"
+              />
+              {newPlayer.imageCode && getImageByCode(newPlayer.imageCode) && (
+                <div className="mt-2 flex items-center gap-2">
+                  <img 
+                    src={getImageByCode(newPlayer.imageCode)!} 
+                    alt="Player preview" 
+                    className="w-10 h-10 rounded-full object-cover border border-border"
+                  />
+                  <span className="text-xs text-muted-foreground">Preview</span>
+                </div>
+              )}
+              {newPlayer.imageCode && !getImageByCode(newPlayer.imageCode) && (
+                <p className="text-xs text-destructive mt-1">No image found for "{newPlayer.imageCode}"</p>
+              )}
+            </div>
             <Button 
               onClick={addPlayer} 
               className="w-full btn-auction"
@@ -189,6 +217,17 @@ const PlayerManagement = () => {
                     key={player.id}
                     className="p-3 rounded-lg bg-secondary/50 border border-border flex items-center justify-between group hover:border-primary/50 transition-colors"
                   >
+                    {getImageByCode(player.imageCode) ? (
+                      <img 
+                        src={getImageByCode(player.imageCode)!} 
+                        alt={player.name} 
+                        className="w-8 h-8 rounded-full object-cover border border-border flex-shrink-0"
+                      />
+                    ) : (
+                      <div className="w-8 h-8 rounded-full bg-secondary flex items-center justify-center text-xs font-display font-bold text-primary flex-shrink-0">
+                        {player.name.charAt(0)}
+                      </div>
+                    )}
                     <div className="flex-1 min-w-0">
                       <div className="font-medium truncate">{player.name}</div>
                       <div className="flex items-center gap-2 text-xs">
