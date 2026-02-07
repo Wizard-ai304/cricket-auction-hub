@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useAuction } from '@/context/AuctionContext';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -39,6 +39,17 @@ const AuctionBoard = () => {
   const availablePlayers = players.filter(p => p.status === 'available');
   const soldPlayers = players.filter(p => p.status === 'sold');
   const unsoldPlayers = players.filter(p => p.status === 'unsold');
+
+  // Shuffle remaining players for display (re-shuffles when player list changes)
+  const shuffledRemainingPlayers = useMemo(() => {
+    const remaining = availablePlayers.filter(p => p.id !== currentPlayer?.id);
+    const shuffled = [...remaining];
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+    return shuffled;
+  }, [availablePlayers.length, currentPlayer?.id]);
 
   // Calculate max bid for a team: remaining balance - ((player slots - 1) × base price)
   const calculateMaxBid = (team: typeof teams[0]) => {
@@ -351,7 +362,7 @@ const AuctionBoard = () => {
             </CardHeader>
             <CardContent>
               <div className="space-y-2 max-h-64 overflow-y-auto pr-1">
-                {availablePlayers.filter(p => p.id !== currentPlayer?.id).map((player) => (
+                {shuffledRemainingPlayers.map((player) => (
                   <div key={player.id} className="flex items-center gap-3 p-2 rounded-lg bg-secondary/30">
                     {getImageByCode(player.imageCode) ? (
                       <img
