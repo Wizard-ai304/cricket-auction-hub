@@ -20,6 +20,7 @@ interface AuctionContextType {
   startAuction: () => void;
   nextPlayer: () => void;
   placeBid: () => void;
+  bidByTeam: (teamId: string) => void;
   dropFromBidding: () => void;
   sellPlayer: () => void;
   markUnsold: () => void;
@@ -266,6 +267,28 @@ export const AuctionProvider: React.FC<{ children: React.ReactNode }> = ({ child
     }));
   }, []);
 
+  const bidByTeam = useCallback((teamId: string) => {
+    const team = teams.find(t => t.id === teamId);
+    if (!team) return;
+    
+    const { currentBid, currentBidder } = auctionState;
+    
+    // Calculate the new bid: if there's already a bidder, increment; otherwise use current (base) price
+    const newBid = currentBidder ? currentBid + bidIncrement : currentBid;
+    
+    // Check if team can afford it
+    if (team.remainingBudget < newBid) return;
+    
+    // Check if team is full
+    if (team.players.length >= team.maxSize) return;
+    
+    setAuctionState(prev => ({
+      ...prev,
+      currentBid: newBid,
+      currentBidder: team,
+    }));
+  }, [auctionState, teams, bidIncrement]);
+
   return (
     <AuctionContext.Provider value={{
       step,
@@ -286,6 +309,7 @@ export const AuctionProvider: React.FC<{ children: React.ReactNode }> = ({ child
       startAuction,
       nextPlayer,
       placeBid,
+      bidByTeam,
       dropFromBidding,
       sellPlayer,
       markUnsold,

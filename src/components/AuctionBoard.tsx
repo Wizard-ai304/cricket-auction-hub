@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { 
-  Gavel, Play, SkipForward, ThumbsDown, Check, X, 
+  Gavel, Play, SkipForward, X, 
   Users, Wallet, AlertTriangle, Trophy, RotateCcw, TrendingUp
 } from 'lucide-react';
 import { getImageByCode } from '@/lib/imageUtils';
@@ -20,8 +20,7 @@ const AuctionBoard = () => {
     updateBidIncrement,
     startAuction,
     nextPlayer,
-    placeBid,
-    dropFromBidding,
+    bidByTeam,
     sellPlayer,
     markUnsold,
     startUnsoldRound,
@@ -33,16 +32,9 @@ const AuctionBoard = () => {
     currentPlayer,
     currentBid,
     currentBidder,
-    teamsInRotation,
-    droppedTeams,
-    activeTeamIndex,
     isAuctionActive,
     isPlayerSold,
   } = auctionState;
-
-  const activeTeamIds = teamsInRotation.filter(id => !droppedTeams.includes(id));
-  const currentTeamId = activeTeamIds[activeTeamIndex % Math.max(activeTeamIds.length, 1)];
-  const currentTeam = teams.find(t => t.id === currentTeamId);
 
   const availablePlayers = players.filter(p => p.status === 'available');
   const soldPlayers = players.filter(p => p.status === 'sold');
@@ -55,17 +47,10 @@ const AuctionBoard = () => {
     return Math.max(0, team.remainingBudget - reserveForOtherPlayers);
   };
 
-  const handleBid = () => {
+  const handleTeamBid = (teamId: string) => {
     setAnimateBid(true);
-    placeBid();
+    bidByTeam(teamId);
     setTimeout(() => setAnimateBid(false), 300);
-  };
-
-  const handleBidIncrementChange = (value: string) => {
-    const num = parseInt(value) || 0;
-    if (num >= 0) {
-      updateBidIncrement(num);
-    }
   };
 
   const getRoleColor = (role: string) => {
@@ -204,57 +189,36 @@ const AuctionBoard = () => {
                   <Input
                     type="number"
                     value={bidIncrement}
-                    onChange={(e) => handleBidIncrementChange(e.target.value)}
+                    onChange={(e) => {
+                      const num = parseInt(e.target.value) || 0;
+                      if (num >= 0) updateBidIncrement(num);
+                    }}
                     className="w-28 h-8 text-center font-display"
                     min={1}
                   />
                 </div>
 
-                {/* Action Buttons */}
+                {/* Action Buttons - Only Sold & Unsold */}
                 {!isPlayerSold ? (
-                  <div className="space-y-4">
-                    <div className="grid grid-cols-2 gap-4">
-                      <Button
-                        size="lg"
-                        onClick={handleBid}
-                        disabled={!currentTeam || currentTeam.remainingBudget < currentBid}
-                        className="btn-auction bg-primary hover:bg-primary/90"
-                      >
-                        <Check className="w-5 h-5 mr-2" />
-                        Bid ₹{(currentBidder ? currentBid + auctionState.bidIncrement : currentBid).toLocaleString()}
-                      </Button>
-                      <Button
-                        size="lg"
-                        variant="destructive"
-                        onClick={dropFromBidding}
-                        className="btn-auction"
-                      >
-                        <ThumbsDown className="w-5 h-5 mr-2" />
-                        Drop
-                      </Button>
-                    </div>
-                    
-                    {/* Sell & Unsold Buttons */}
-                    <div className="grid grid-cols-2 gap-4 pt-2 border-t border-border">
-                      <Button
-                        size="lg"
-                        onClick={sellPlayer}
-                        disabled={!currentBidder}
-                        className="btn-auction bg-accent text-accent-foreground hover:bg-accent/90"
-                      >
-                        <Gavel className="w-5 h-5 mr-2" />
-                        Sell
-                      </Button>
-                      <Button
-                        size="lg"
-                        variant="outline"
-                        onClick={markUnsold}
-                        className="btn-auction border-destructive text-destructive hover:bg-destructive/10"
-                      >
-                        <X className="w-5 h-5 mr-2" />
-                        Unsold
-                      </Button>
-                    </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <Button
+                      size="lg"
+                      onClick={sellPlayer}
+                      disabled={!currentBidder}
+                      className="btn-auction bg-accent text-accent-foreground hover:bg-accent/90"
+                    >
+                      <Gavel className="w-5 h-5 mr-2" />
+                      Sell
+                    </Button>
+                    <Button
+                      size="lg"
+                      variant="outline"
+                      onClick={markUnsold}
+                      className="btn-auction border-destructive text-destructive hover:bg-destructive/10"
+                    >
+                      <X className="w-5 h-5 mr-2" />
+                      Unsold
+                    </Button>
                   </div>
                 ) : (
                   <div className="text-center py-4">
@@ -273,42 +237,37 @@ const AuctionBoard = () => {
           </CardContent>
         </Card>
 
-        {/* Teams Rotation Panel */}
+        {/* Teams Panel - Click to Bid */}
         <Card className="card-stadium">
           <CardHeader className="pb-4">
             <CardTitle className="font-display text-lg flex items-center gap-2">
               <Users className="w-5 h-5 text-primary" />
-              Bidding Rotation
+              Teams — Click to Bid
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
-              {teamsInRotation.map((teamId, index) => {
-                const team = teams.find(t => t.id === teamId);
-                if (!team) return null;
-
-                const isDropped = droppedTeams.includes(teamId);
-                const isActive = teamId === currentTeamId && !isPlayerSold;
+              {teams.map((team) => {
                 const isFull = team.players.length >= team.maxSize;
-                const canAfford = team.remainingBudget >= currentBid;
+                const nextBid = currentBidder ? currentBid + bidIncrement : currentBid;
+                const canAfford = team.remainingBudget >= nextBid;
+                const isCurrentBidder = currentBidder?.id === team.id;
+                const isDisabled = isFull || !canAfford || isPlayerSold;
 
                 return (
-                  <div
-                    key={teamId}
-                    className={`p-3 rounded-lg border transition-all ${
-                      isActive 
-                        ? 'bg-primary/20 border-primary shadow-[0_0_15px_hsl(var(--primary)/0.3)]' 
-                        : isDropped 
-                          ? 'bg-secondary/30 border-border opacity-50' 
-                          : 'bg-secondary/50 border-border'
+                  <button
+                    key={team.id}
+                    onClick={() => !isDisabled && handleTeamBid(team.id)}
+                    disabled={isDisabled}
+                    className={`w-full p-3 rounded-lg border transition-all text-left ${
+                      isCurrentBidder
+                        ? 'bg-primary/20 border-primary shadow-[0_0_15px_hsl(var(--primary)/0.3)] ring-2 ring-primary/50'
+                        : isDisabled
+                          ? 'bg-secondary/30 border-border opacity-50 cursor-not-allowed'
+                          : 'bg-secondary/50 border-border hover:bg-primary/10 hover:border-primary/50 cursor-pointer'
                     }`}
                   >
                     <div className="flex items-center gap-3">
-                      <div 
-                        className={`rotation-indicator ${
-                          isActive ? 'active' : isDropped ? 'dropped' : 'waiting'
-                        }`}
-                      />
                       {getImageByCode(team.logoCode) ? (
                         <img 
                           src={getImageByCode(team.logoCode)!} 
@@ -326,6 +285,11 @@ const AuctionBoard = () => {
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2">
                           <span className="font-medium truncate">{team.name}</span>
+                          {isCurrentBidder && (
+                            <Badge variant="outline" className="text-xs border-primary text-primary">
+                              HIGHEST
+                            </Badge>
+                          )}
                           {isFull && (
                             <Badge variant="outline" className="text-xs border-accent text-accent">
                               FULL
@@ -335,7 +299,7 @@ const AuctionBoard = () => {
                         <div className="flex items-center gap-2 text-xs text-muted-foreground">
                           <Wallet className="w-3 h-3" />
                           ₹{team.remainingBudget.toLocaleString()}
-                          {!canAfford && !isDropped && (
+                          {!canAfford && !isFull && (
                             <AlertTriangle className="w-3 h-3 text-destructive" />
                           )}
                         </div>
@@ -347,13 +311,7 @@ const AuctionBoard = () => {
                         {team.players.length}/{team.maxSize}
                       </div>
                     </div>
-                    {isDropped && (
-                      <div className="mt-2 text-xs text-destructive flex items-center gap-1">
-                        <X className="w-3 h-3" />
-                        Dropped from this round
-                      </div>
-                    )}
-                  </div>
+                  </button>
                 );
               })}
             </div>
