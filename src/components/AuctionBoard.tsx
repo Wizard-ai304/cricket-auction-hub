@@ -336,6 +336,77 @@ const AuctionBoard = () => {
           </CardContent>
         </Card>
       </div>
+
+      {/* Remaining & Unsold Players Lists */}
+      <div className="mt-6 grid gap-6 lg:grid-cols-2">
+        {/* Remaining Players */}
+        {availablePlayers.length > 0 && (
+          <Card className="card-stadium">
+            <CardHeader className="pb-3">
+              <CardTitle className="font-display text-lg flex items-center gap-2">
+                <Users className="w-5 h-5 text-primary" />
+                Remaining Players
+                <Badge variant="outline" className="ml-auto">{availablePlayers.length}</Badge>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-2 max-h-64 overflow-y-auto pr-1">
+                {availablePlayers.filter(p => p.id !== currentPlayer?.id).map((player) => (
+                  <div key={player.id} className="flex items-center gap-3 p-2 rounded-lg bg-secondary/30">
+                    {getImageByCode(player.imageCode) ? (
+                      <img
+                        src={getImageByCode(player.imageCode)!}
+                        alt={player.name}
+                        className="w-8 h-8 rounded-full object-cover border border-border"
+                      />
+                    ) : (
+                      <div className="w-8 h-8 rounded-full bg-secondary flex items-center justify-center text-sm font-bold text-primary">
+                        {player.name.charAt(0)}
+                      </div>
+                    )}
+                    <span className="font-medium flex-1 truncate">{player.name}</span>
+                    <Badge className={`${getRoleColor(player.role)} border text-xs`}>{player.role}</Badge>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Unsold Players */}
+        {unsoldPlayers.length > 0 && (
+          <Card className="card-stadium">
+            <CardHeader className="pb-3">
+              <CardTitle className="font-display text-lg flex items-center gap-2">
+                <AlertTriangle className="w-5 h-5 text-destructive" />
+                Unsold Players
+                <Badge variant="outline" className="ml-auto border-destructive text-destructive">{unsoldPlayers.length}</Badge>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-2 max-h-64 overflow-y-auto pr-1">
+                {unsoldPlayers.map((player) => (
+                  <div key={player.id} className="flex items-center gap-3 p-2 rounded-lg bg-destructive/10 border border-destructive/20">
+                    {getImageByCode(player.imageCode) ? (
+                      <img
+                        src={getImageByCode(player.imageCode)!}
+                        alt={player.name}
+                        className="w-8 h-8 rounded-full object-cover border border-destructive/30"
+                      />
+                    ) : (
+                      <div className="w-8 h-8 rounded-full bg-destructive/20 flex items-center justify-center text-sm font-bold text-destructive">
+                        {player.name.charAt(0)}
+                      </div>
+                    )}
+                    <span className="font-medium flex-1 truncate">{player.name}</span>
+                    <Badge className={`${getRoleColor(player.role)} border text-xs`}>{player.role}</Badge>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        )}
+      </div>
     </div>
   );
 };
