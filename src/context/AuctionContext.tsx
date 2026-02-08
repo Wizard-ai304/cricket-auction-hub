@@ -313,6 +313,9 @@ export const AuctionProvider: React.FC<{ children: React.ReactNode }> = ({ child
     
     // Check if team is full
     if (team.players.length >= team.maxSize) return;
+
+    // Save snapshot before every bid so undo rewinds one step
+    saveSnapshot();
     
     setAuctionState(prev => ({
       ...prev,
