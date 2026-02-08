@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { 
   Gavel, Play, SkipForward, X, 
-  Users, Wallet, AlertTriangle, Trophy, RotateCcw, TrendingUp
+  Users, Wallet, AlertTriangle, Trophy, RotateCcw, TrendingUp, Undo2
 } from 'lucide-react';
 import { getImageByCode } from '@/lib/imageUtils';
 
@@ -24,6 +24,8 @@ const AuctionBoard = () => {
     sellPlayer,
     markUnsold,
     startUnsoldRound,
+    undoLastAction,
+    canUndo,
   } = useAuction();
 
   const [animateBid, setAnimateBid] = useState(false);
@@ -209,9 +211,9 @@ const AuctionBoard = () => {
                   />
                 </div>
 
-                {/* Action Buttons - Only Sold & Unsold */}
+                {/* Action Buttons - Sold, Unsold & Undo */}
                 {!isPlayerSold ? (
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-3 gap-3">
                     <Button
                       size="lg"
                       onClick={sellPlayer}
@@ -230,16 +232,38 @@ const AuctionBoard = () => {
                       <X className="w-5 h-5 mr-2" />
                       Unsold
                     </Button>
+                    <Button
+                      size="lg"
+                      variant="outline"
+                      onClick={undoLastAction}
+                      disabled={!canUndo}
+                      className="btn-auction border-muted-foreground text-muted-foreground hover:bg-secondary/50"
+                    >
+                      <Undo2 className="w-5 h-5 mr-2" />
+                      Undo
+                    </Button>
                   </div>
                 ) : (
                   <div className="text-center py-4">
                     <div className="text-2xl font-display text-accent text-gold-glow mb-4">
                       SOLD to {currentBidder?.name}!
                     </div>
-                    <Button size="lg" onClick={nextPlayer} className="btn-auction bg-primary">
-                      <SkipForward className="w-5 h-5 mr-2" />
-                      Next Player
-                    </Button>
+                    <div className="flex justify-center gap-3">
+                      <Button size="lg" onClick={nextPlayer} className="btn-auction bg-primary">
+                        <SkipForward className="w-5 h-5 mr-2" />
+                        Next Player
+                      </Button>
+                      <Button
+                        size="lg"
+                        variant="outline"
+                        onClick={undoLastAction}
+                        disabled={!canUndo}
+                        className="btn-auction border-muted-foreground text-muted-foreground hover:bg-secondary/50"
+                      >
+                        <Undo2 className="w-5 h-5 mr-2" />
+                        Undo
+                      </Button>
+                    </div>
                   </div>
                 )}
 
