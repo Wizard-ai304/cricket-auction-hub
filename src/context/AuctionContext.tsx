@@ -1,6 +1,12 @@
 import React, { createContext, useContext, useState, useCallback } from 'react';
 import { Player, Team, AuctionState, AppStep } from '@/types/auction';
 
+interface AuctionSnapshot {
+  players: Player[];
+  teams: Team[];
+  auctionState: AuctionState;
+}
+
 interface AuctionContextType {
   step: AppStep;
   setStep: (step: AppStep) => void;
@@ -25,6 +31,8 @@ interface AuctionContextType {
   sellPlayer: () => void;
   markUnsold: () => void;
   startUnsoldRound: () => void;
+  undoLastAction: () => void;
+  canUndo: boolean;
 }
 
 const AuctionContext = createContext<AuctionContextType | undefined>(undefined);
@@ -53,6 +61,26 @@ export const AuctionProvider: React.FC<{ children: React.ReactNode }> = ({ child
     isAuctionActive: false,
     isPlayerSold: false,
   });
+
+  const [undoStack, setUndoStack] = useState<AuctionSnapshot[]>([]);
+  const canUndo = undoStack.length > 0;
+
+  const saveSnapshot = useCallback(() => {
+    setUndoStack(prev => [...prev, {
+      players: JSON.parse(JSON.stringify(players)),
+      teams: JSON.parse(JSON.stringify(teams)),
+      auctionState: JSON.parse(JSON.stringify(auctionState)),
+    }]);
+  }, [players, teams, auctionState]);
+
+  const undoLastAction = useCallback(() => {
+    if (undoStack.length === 0) return;
+    const snapshot = undoStack[undoStack.length - 1];
+    setPlayers(snapshot.players);
+    setTeams(snapshot.teams);
+    setAuctionState(snapshot.auctionState);
+    setUndoStack(prev => prev.slice(0, -1));
+  }, [undoStack]);
 
   const getAvailableTeams = useCallback(() => {
     return teams.filter(t => t.players.length < t.maxSize);
@@ -204,6 +232,8 @@ export const AuctionProvider: React.FC<{ children: React.ReactNode }> = ({ child
     const { currentPlayer, currentBid, currentBidder } = auctionState;
     
     if (!currentPlayer || !currentBidder) return;
+
+    saveSnapshot();
     
     setPlayers(prev => prev.map(p => 
       p.id === currentPlayer.id 
@@ -231,6 +261,8 @@ export const AuctionProvider: React.FC<{ children: React.ReactNode }> = ({ child
     const { currentPlayer } = auctionState;
     
     if (!currentPlayer) return;
+
+    saveSnapshot();
     
     setPlayers(prev => prev.map(p => 
       p.id === currentPlayer.id 
@@ -314,6 +346,8 @@ export const AuctionProvider: React.FC<{ children: React.ReactNode }> = ({ child
       sellPlayer,
       markUnsold,
       startUnsoldRound,
+      undoLastAction,
+      canUndo,
     }}>
       {children}
     </AuctionContext.Provider>
