@@ -33,9 +33,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       if (firebaseUser) {
-        // Get user role from Firestore
-        const userDoc = await getDoc(doc(db, 'users', firebaseUser.uid));
-        const role = (userDoc.data()?.role || 'viewer') as UserRole;
+        let role: UserRole = 'viewer';
+        try {
+          const userDoc = await getDoc(doc(db, 'users', firebaseUser.uid));
+          role = (userDoc.data()?.role || null) as UserRole;
+        } catch (error) {
+          console.warn('Could not fetch user role from Firestore:', error);
+          role = null as any;
+        }
 
         setUser({
           uid: firebaseUser.uid,

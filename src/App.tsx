@@ -25,6 +25,11 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
     return <Navigate to="/login" replace />;
   }
 
+  // If user has no role yet, redirect to role selection
+  if (!user.role) {
+    return <Navigate to="/role-selection" replace />;
+  }
+
   return <>{children}</>;
 };
 
